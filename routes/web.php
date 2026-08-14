@@ -4,6 +4,7 @@ use App\Http\Controllers\LahanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressLogController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TroubleReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('lahans', LahanController::class);
     Route::resource('transactions', TransactionController::class);
     Route::resource('progress-logs', ProgressLogController::class);
+    Route::resource('trouble-reports', TroubleReportController::class);
+
+    Route::post('trouble-reports/{troubleReport}/advance-status', [TroubleReportController::class, 'advanceStatus'])
+        ->name('trouble-reports.advance-status');
+    Route::post('trouble-reports/{troubleReport}/updates', [TroubleReportController::class, 'addUpdate'])
+        ->name('trouble-reports.add-update');
 });
 
 
