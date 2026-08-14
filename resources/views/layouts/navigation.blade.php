@@ -24,6 +24,9 @@
                     <x-nav-link :active="request()->routeIs('transactions.*')" :href="route('transactions.index')">
                         {{ __('Transaksi') }}
                     </x-nav-link>
+                    <x-nav-link :active="request()->routeIs('progress-logs.*')" :href="route('progress-logs.index')">
+                        {{ __('Progress') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -95,6 +98,9 @@
 
             <x-responsive-nav-link :active="request()->routeIs('transactions.*')" :href="route('transactions.index')">
                 {{ __('Transaksi') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :active="request()->routeIs('progress-logs.*')" :href="route('progress-logs.index')">
+                {{ __('Progress') }}
             </x-responsive-nav-link>
         </div>
 
