@@ -6,6 +6,8 @@ use App\Http\Controllers\ProgressLogController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TroubleReportController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\PartnerAgreementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,6 +30,9 @@ Route::middleware('auth')->group(function () {
         ->name('trouble-reports.advance-status');
     Route::post('trouble-reports/{troubleReport}/updates', [TroubleReportController::class, 'addUpdate'])
         ->name('trouble-reports.add-update');
+
+    Route::resource('partners', PartnerController::class);
+    Route::resource('partner-agreements', PartnerAgreementController::class)->except(['index', 'show']);
 });
 
 
