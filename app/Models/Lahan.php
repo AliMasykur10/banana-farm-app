@@ -2,6 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Transaction;
+use App\Models\PartnerAgreement;
+use App\Models\LahanPhaseLog;
+use App\Models\PanenCycle;
+use App\Models\ProgressLog;
+use App\Models\TroubleReport;
+use App\Models\Schedule;
+use App\Models\AssetAllocation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

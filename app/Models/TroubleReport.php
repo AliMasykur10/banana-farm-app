@@ -4,34 +4,27 @@ namespace App\Models;
 
 use App\Models\Lahan;
 use App\Models\User;
-use App\Models\PanenCycle;
-use App\Models\Asset;
+use App\Models\TroubleUpdate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Transaction extends Model
+class TroubleReport extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'lahan_id',
         'user_id',
-        'panen_cycle_id',
-        'asset_id',
-        'jenis',
-        'kategori',
-        'jumlah',
-        'is_cash',
-        'tanggal',
-        'keterangan',
-        'foto_bukti',
+        'judul',
+        'deskripsi',
+        'urgensi',
+        'status',
+        'foto_urls',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'is_cash' => 'boolean',
-        'jumlah' => 'decimal:2',
+        'foto_urls' => 'array',
     ];
 
     public function lahan()
@@ -44,13 +37,8 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function panenCycle()
+    public function updates()
     {
-        return $this->belongsTo(PanenCycle::class);
-    }
-
-    public function asset()
-    {
-        return $this->belongsTo(Asset::class);
+        return $this->hasMany(TroubleUpdate::class);
     }
 }
