@@ -38,9 +38,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('assets', AssetController::class);
 
-    Route::resource('schedules', ScheduleController::class)->except(['show']);
-    Route::post('schedules/{schedule}/mark-done', [ScheduleController::class, 'markDone'])
-        ->name('schedules.mark-done');
+   Route::resource('schedules', ScheduleController::class);
+Route::post('schedules/{schedule}/mark-done', [ScheduleController::class, 'markDone'])
+    ->name('schedules.mark-done');
 });
 
 

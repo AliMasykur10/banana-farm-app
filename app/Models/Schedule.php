@@ -20,4 +20,8 @@ class Schedule extends Model
     {
         return $this->belongsTo(Lahan::class);
     }
+    public function logs()
+    {
+        return $this->hasMany(ScheduleLog::class)->latest('tanggal_dilakukan');
+    }
 }

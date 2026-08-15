@@ -43,7 +43,12 @@
                             <tr
                                 class="{{ $schedule->next_date->isPast() && $schedule->status === 'aktif' ? 'bg-red-50' : '' }} border-b">
                                 <td class="py-2">{{ $schedule->lahan->nama }}</td>
-                                <td class="py-2">{{ $schedule->jenis }}</td>
+                                <td class="py-2">
+                                    <a class="text-blue-600 hover:underline"
+                                        href="{{ route('schedules.show', $schedule) }}">
+                                        {{ $schedule->jenis }}
+                                    </a>
+
                                 <td class="py-2">
                                     {{ match ($schedule->recurring_pattern) {
                                         'harian' => 'Harian',
@@ -70,14 +75,7 @@
                                     </span>
                                 </td>
                                 <td class="space-x-2 py-2">
-                                    @if ($schedule->status === 'aktif')
-                                        <form action="{{ route('schedules.mark-done', $schedule) }}" class="inline"
-                                            method="POST">
-                                            @csrf
-                                            <button class="text-green-600 hover:underline" type="submit">Tandai
-                                                Selesai</button>
-                                        </form>
-                                    @endif
+
                                     <a class="text-yellow-600 hover:underline"
                                         href="{{ route('schedules.edit', $schedule) }}">Edit</a>
                                     @if ($schedule->status !== 'selesai')

@@ -38,6 +38,13 @@ class ScheduleController extends Controller
         return redirect()->route('schedules.index')->with('success', 'Jadwal berhasil ditambahkan.');
     }
 
+    public function show(Schedule $schedule)
+    {
+        $schedule->load('lahan', 'logs.user');
+
+        return view('schedules.show', compact('schedule'));
+    }
+
     public function edit(Schedule $schedule)
     {
         $lahans = Lahan::all();
@@ -73,8 +80,14 @@ class ScheduleController extends Controller
     }
 
     // Tandai jadwal sudah dikerjakan, otomatis geser ke next_date berikutnya kalau recurring
-    public function markDone(Schedule $schedule)
+    public function markDone(Request $request, Schedule $schedule)
     {
+        $schedule->logs()->create([
+            'user_id' => auth()->id(),
+            'tanggal_dilakukan' => now(),
+            'catatan' => $request->input('catatan'),
+        ]);
+
         if ($schedule->recurring_pattern) {
             $daysToAdd = match ($schedule->recurring_pattern) {
                 'harian' => 1,
@@ -91,6 +104,6 @@ class ScheduleController extends Controller
             $schedule->update(['status' => 'selesai']);
         }
 
-        return redirect()->route('schedules.index')->with('success', 'Jadwal ditandai selesai.');
+        return redirect()->route('schedules.index')->with('success', 'Jadwal ditandai selesai dan tercatat di riwayat.');
     }
 }
