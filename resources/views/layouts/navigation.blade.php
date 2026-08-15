@@ -36,6 +36,9 @@
                     <x-nav-link :active="request()->routeIs('assets.*')" :href="route('assets.index')">
                         {{ __('Aset') }}
                     </x-nav-link>
+                    <x-nav-link :active="request()->routeIs('schedules.*')" :href="route('schedules.index')">
+                        {{ __('Jadwal') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -120,8 +123,13 @@
             <x-responsive-nav-link :active="request()->routeIs('partners.*')" :href="route('partners.index')">
                 {{ __('Partner') }}
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :active="request()->routeIs('assets.*')" :href="route('assets.index')">
                 {{ __('Aset') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :active="request()->routeIs('schedules.*')" :href="route('schedules.index')">
+                {{ __('Jadwal') }}
             </x-responsive-nav-link>
         </div>
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\PartnerAgreementController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressLogController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TroubleReportController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('partner-agreements', PartnerAgreementController::class)->except(['index', 'show']);
 
     Route::resource('assets', AssetController::class);
+
+    Route::resource('schedules', ScheduleController::class)->except(['show']);
+    Route::post('schedules/{schedule}/mark-done', [ScheduleController::class, 'markDone'])
+        ->name('schedules.mark-done');
 });
 
 
