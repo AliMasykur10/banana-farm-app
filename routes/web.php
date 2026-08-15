@@ -1,13 +1,14 @@
 <?php
 
+use App\Http\Controllers\AssetController;
 use App\Http\Controllers\LahanController;
+use App\Http\Controllers\PartnerAgreementController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressLogController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TroubleReportController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PartnerController;
-use App\Http\Controllers\PartnerAgreementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('partners', PartnerController::class);
     Route::resource('partner-agreements', PartnerAgreementController::class)->except(['index', 'show']);
+
+    Route::resource('assets', AssetController::class);
 });
 
 
