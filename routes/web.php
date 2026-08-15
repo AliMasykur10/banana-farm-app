@@ -6,6 +6,7 @@ use App\Http\Controllers\PartnerAgreementController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgressLogController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TroubleReportController;
@@ -38,9 +39,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('assets', AssetController::class);
 
-   Route::resource('schedules', ScheduleController::class);
-Route::post('schedules/{schedule}/mark-done', [ScheduleController::class, 'markDone'])
-    ->name('schedules.mark-done');
+    Route::resource('schedules', ScheduleController::class);
+    Route::post('schedules/{schedule}/mark-done', [ScheduleController::class, 'markDone'])
+        ->name('schedules.mark-done');
+
+    Route::get('reports', [ReportController::class, 'form'])->name('reports.form');
+    Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 });
 
 
