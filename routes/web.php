@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LahanController;
+use App\Http\Controllers\PanenCycleController;
 use App\Http\Controllers\PartnerAgreementController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProfileController;
@@ -10,7 +12,6 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TroubleReportController;
-use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('reports', [ReportController::class, 'form'])->name('reports.form');
     Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+
+    Route::resource('panen-cycles', PanenCycleController::class)->except(['edit', 'update']);
 });
 
 
