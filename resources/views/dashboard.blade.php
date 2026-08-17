@@ -1,17 +1,119 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
+        <h2 class="text-xl font-semibold leading-tight text-gray-800">
+            Dashboard
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
+        <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div class="rounded-lg bg-white p-6 text-center shadow-sm">
+                    <p class="text-xs text-gray-500">Pemasukan Bulan Ini</p>
+                    <p class="mt-1 text-xl font-bold text-green-600">Rp
+                        {{ number_format($totalPemasukanBulanIni, 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-lg bg-white p-6 text-center shadow-sm">
+                    <p class="text-xs text-gray-500">Pengeluaran Bulan Ini</p>
+                    <p class="mt-1 text-xl font-bold text-red-600">Rp
+                        {{ number_format($totalPengeluaranBulanIni, 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-lg bg-white p-6 text-center shadow-sm">
+                    <p class="text-xs text-gray-500">Profit Bulan Ini</p>
+                    @php $profitBulanIni = $totalPemasukanBulanIni - $totalPengeluaranBulanIni; @endphp
+                    <p class="{{ $profitBulanIni >= 0 ? 'text-green-600' : 'text-red-600' }} mt-1 text-xl font-bold">
+                        Rp {{ number_format($profitBulanIni, 0, ',', '.') }}
+                    </p>
                 </div>
             </div>
+
+            <div class="rounded-lg bg-white p-6 shadow-sm">
+                <h3 class="mb-4 font-medium">Ringkasan Lahan</h3>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    @forelse ($lahans as $lahan)
+                        <a class="rounded border p-3 text-sm hover:bg-gray-50"
+                            href="{{ route('lahans.show', $lahan) }}">
+                            <p class="font-medium">{{ $lahan->nama }}</p>
+                            <p class="text-gray-500">
+                                Fase: {{ str_replace('_', ' ', ucfirst($lahan->fase_saat_ini)) }} —
+                                {{ $lahan->transactions_count }} transaksi
+                            </p>
+                        </a>
+                    @empty
+                        <p class="text-sm text-gray-500">Belum ada lahan.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            @if ($jadwalTerlewat->count() > 0)
+                <div class="rounded-lg border border-red-200 bg-red-50 p-6">
+                    <h3 class="mb-4 font-medium text-red-800">⚠ Jadwal Terlewat ({{ $jadwalTerlewat->count() }})</h3>
+                    <div class="space-y-2">
+                        @foreach ($jadwalTerlewat as $jadwal)
+                            <a class="block text-sm hover:underline" href="{{ route('schedules.show', $jadwal) }}">
+                                {{ $jadwal->jenis }} — {{ $jadwal->lahan->nama }} (harusnya
+                                {{ $jadwal->next_date->format('d M Y') }})
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="mb-4 font-medium">Trouble Aktif ({{ $troubleAktif->count() }})</h3>
+                    <div class="space-y-2">
+                        @forelse ($troubleAktif as $trouble)
+                            <a class="block text-sm hover:underline"
+                                href="{{ route('trouble-reports.show', $trouble) }}">
+                                <span class="font-medium">{{ $trouble->judul }}</span>
+                                <span class="text-gray-500">— {{ $trouble->lahan->nama }}
+                                    ({{ $trouble->status }})</span>
+                            </a>
+                        @empty
+                            <p class="text-sm text-gray-500">Tidak ada masalah aktif.</p>
+                        @endforelse
+                    </div>
+                    <a class="mt-3 inline-block text-xs text-blue-600 hover:underline"
+                        href="{{ route('trouble-reports.index') }}">Lihat semua &rarr;</a>
+                </div>
+
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <h3 class="mb-4 font-medium">Jadwal Mendatang</h3>
+                    <div class="space-y-2">
+                        @forelse ($jadwalMendatang as $jadwal)
+                            <a class="block text-sm hover:underline" href="{{ route('schedules.show', $jadwal) }}">
+                                <span class="font-medium">{{ $jadwal->jenis }}</span>
+                                <span class="text-gray-500">— {{ $jadwal->lahan->nama }}
+                                    ({{ $jadwal->next_date->format('d M Y') }})</span>
+                            </a>
+                        @empty
+                            <p class="text-sm text-gray-500">Tidak ada jadwal mendatang.</p>
+                        @endforelse
+                    </div>
+                    <a class="mt-3 inline-block text-xs text-blue-600 hover:underline"
+                        href="{{ route('schedules.index') }}">Lihat semua &rarr;</a>
+                </div>
+            </div>
+
+            <div class="rounded-lg bg-white p-6 shadow-sm">
+                <h3 class="mb-4 font-medium">Log Perkembangan Terbaru</h3>
+                <div class="space-y-2">
+                    @forelse ($progressTerbaru as $log)
+                        <a class="block text-sm hover:underline" href="{{ route('progress-logs.show', $log) }}">
+                            <span class="font-medium">{{ $log->lahan->nama }}</span>
+                            <span class="text-gray-500">— {{ $log->tanggal->format('d M Y') }} oleh
+                                {{ $log->user->name }}</span>
+                        </a>
+                    @empty
+                        <p class="text-sm text-gray-500">Belum ada log perkembangan.</p>
+                    @endforelse
+                </div>
+                <a class="mt-3 inline-block text-xs text-blue-600 hover:underline"
+                    href="{{ route('progress-logs.index') }}">Lihat semua &rarr;</a>
+            </div>
+
         </div>
     </div>
 </x-app-layout>
