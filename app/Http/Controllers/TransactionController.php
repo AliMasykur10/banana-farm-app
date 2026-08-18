@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Lahan;
+use App\Support\ActiveLahan;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -15,7 +16,13 @@ class TransactionController extends Controller
     {
         $this->authorize('viewAny', Transaction::class);
 
-        $transactions = Transaction::with('lahan', 'user')->latest('tanggal')->paginate(20);
+        $query = Transaction::with('lahan', 'user')->latest('tanggal');
+
+        if (!ActiveLahan::isAllSelected()) {
+            $query->where('lahan_id', ActiveLahan::id());
+        }
+
+        $transactions = $query->paginate(20);
 
         return view('transactions.index', compact('transactions'));
     }
@@ -24,9 +31,10 @@ class TransactionController extends Controller
     {
         $this->authorize('create', Transaction::class);
 
-        $lahans = Lahan::all();
+        $activeLahan = ActiveLahan::get();
+        $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
-        return view('transactions.create', compact('lahans'));
+        return view('transactions.create', compact('lahans', 'activeLahan'));
     }
 
     public function store(Request $request)

@@ -9,6 +9,9 @@
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <x-lahan-switcher />
+                </div>
 
                 <!-- Navigation Links -->
 
