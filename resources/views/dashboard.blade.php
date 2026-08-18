@@ -28,6 +28,21 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div class="rounded-xl border border-line bg-surface p-6 lg:col-span-2">
+                    <h3 class="mb-4 font-medium text-ink">Tren Keuangan 6 Bulan Terakhir</h3>
+                    <canvas height="100" id="trendChart"></canvas>
+                </div>
+                <div class="rounded-xl border border-line bg-surface p-6">
+                    <h3 class="mb-4 font-medium text-ink">Pengeluaran Bulan Ini</h3>
+                    @if ($breakdownKategori->count() > 0)
+                        <canvas height="220" id="kategoriChart"></canvas>
+                    @else
+                        <p class="py-12 text-center text-sm text-ink-muted">Belum ada pengeluaran bulan ini.</p>
+                    @endif
+                </div>
+            </div>
+
             <div class="rounded-lg bg-white p-6 shadow-sm">
                 <h3 class="mb-4 font-medium">Ringkasan Lahan</h3>
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -69,7 +84,8 @@
                                 href="{{ route('trouble-reports.show', $trouble) }}">
                                 <span class="font-medium">{{ $trouble->judul }}</span>
                                 <span class="text-gray-500">— {{ $trouble->lahan->nama }}
-                                    ({{ $trouble->status }})</span>
+                                    ({{ $trouble->status }})
+                                </span>
                             </a>
                         @empty
                             <p class="text-sm text-gray-500">Tidak ada masalah aktif.</p>
@@ -86,7 +102,8 @@
                             <a class="block text-sm hover:underline" href="{{ route('schedules.show', $jadwal) }}">
                                 <span class="font-medium">{{ $jadwal->jenis }}</span>
                                 <span class="text-gray-500">— {{ $jadwal->lahan->nama }}
-                                    ({{ $jadwal->next_date->format('d M Y') }})</span>
+                                    ({{ $jadwal->next_date->format('d M Y') }})
+                                </span>
                             </a>
                         @empty
                             <p class="text-sm text-gray-500">Tidak ada jadwal mendatang.</p>
@@ -116,4 +133,82 @@
 
         </div>
     </div>
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Grafik tren keuangan
+                new Chart(document.getElementById('trendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: @json($trendLabels),
+                        datasets: [{
+                                label: 'Pemasukan',
+                                data: @json($trendPemasukan),
+                                borderColor: '#2F7A4D',
+                                backgroundColor: '#2F7A4D20',
+                                tension: 0.3,
+                                fill: true,
+                            },
+                            {
+                                label: 'Pengeluaran',
+                                data: @json($trendPengeluaran),
+                                borderColor: '#B3413A',
+                                backgroundColor: '#B3413A20',
+                                tension: 0.3,
+                                fill: true,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + (value / 1000) + 'rb';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Grafik breakdown kategori
+                @if ($breakdownKategori->count() > 0)
+                    new Chart(document.getElementById('kategoriChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: @json($breakdownKategori->keys()),
+                            datasets: [{
+                                data: @json($breakdownKategori->values()),
+                                backgroundColor: ['#2F5233', '#B8863A', '#B3413A', '#6B7268', '#2F7A4D',
+                                    '#3B7A9E'
+                                ],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                @endif
+            });
+        </script>
+    @endpush
 </x-app-layout>

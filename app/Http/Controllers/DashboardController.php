@@ -58,6 +58,36 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Data untuk grafik tren 6 bulan terakhir
+        $trendLabels = [];
+        $trendPemasukan = [];
+        $trendPengeluaran = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $bulan = now()->subMonths($i);
+            $trendLabels[] = $bulan->translatedFormat('M Y');
+
+            $trendPemasukan[] = Transaction::where('jenis', 'pemasukan')
+                ->whereYear('tanggal', $bulan->year)
+                ->whereMonth('tanggal', $bulan->month)
+                ->when($lahanFilter, fn($q) => $q->where('lahan_id', $lahanFilter))
+                ->sum('jumlah');
+
+            $trendPengeluaran[] = Transaction::where('jenis', 'pengeluaran')
+                ->whereYear('tanggal', $bulan->year)
+                ->whereMonth('tanggal', $bulan->month)
+                ->when($lahanFilter, fn($q) => $q->where('lahan_id', $lahanFilter))
+                ->sum('jumlah');
+        }
+
+        // Data untuk breakdown pengeluaran per kategori (bulan ini)
+        $breakdownKategori = Transaction::where('jenis', 'pengeluaran')
+            ->where('tanggal', '>=', $bulanIni)
+            ->when($lahanFilter, fn($q) => $q->where('lahan_id', $lahanFilter))
+            ->selectRaw('kategori, SUM(jumlah) as total')
+            ->groupBy('kategori')
+            ->pluck('total', 'kategori');
+
         return view('dashboard', compact(
             'lahans',
             'totalPemasukanBulanIni',
@@ -65,7 +95,12 @@ class DashboardController extends Controller
             'troubleAktif',
             'jadwalTerlewat',
             'jadwalMendatang',
-            'progressTerbaru'
+            'progressTerbaru',
+            'trendLabels',
+            'trendPemasukan',
+            'trendPengeluaran',
+            'breakdownKategori'
+
         ));
     }
 }
