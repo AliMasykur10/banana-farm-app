@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TroubleReport;
 use App\Models\Lahan;
-use Illuminate\Http\Request;
+use App\Models\TroubleReport;
+use App\Support\ActiveLahan;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class TroubleReportController extends Controller
 {
@@ -15,7 +16,13 @@ class TroubleReportController extends Controller
     {
         $this->authorize('viewAny', TroubleReport::class);
 
-        $troubleReports = TroubleReport::with('lahan', 'user')->latest()->paginate(20);
+        $query = TroubleReport::with('lahan', 'user')->latest();
+
+        if (!ActiveLahan::isAllSelected()) {
+            $query->where('lahan_id', ActiveLahan::id());
+        }
+
+        $troubleReports = $query->paginate(20);
 
         return view('trouble-reports.index', compact('troubleReports'));
     }
@@ -24,7 +31,8 @@ class TroubleReportController extends Controller
     {
         $this->authorize('create', TroubleReport::class);
 
-        $lahans = Lahan::all();
+        $activeLahan = ActiveLahan::get();
+        $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
         return view('trouble-reports.create', compact('lahans'));
     }
