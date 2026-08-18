@@ -5,19 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\PanenCycle;
 use App\Models\Lahan;
 use Illuminate\Http\Request;
+use App\Support\ActiveLahan;
 
 class PanenCycleController extends Controller
 {
     public function index()
     {
-        $panenCycles = PanenCycle::with('lahan', 'anakanRecord')->latest('tanggal_panen')->get();
+        $query = PanenCycle::with('lahan', 'anakanRecord')->latest('tanggal_panen');
+
+        if (!ActiveLahan::isAllSelected()) {
+            $query->where('lahan_id', ActiveLahan::id());
+        }
+
+        $panenCycles = $query->get();
 
         return view('panen-cycles.index', compact('panenCycles'));
     }
 
     public function create()
     {
-        $lahans = Lahan::all();
+        $activeLahan = ActiveLahan::get();
+        $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
         return view('panen-cycles.create', compact('lahans'));
     }

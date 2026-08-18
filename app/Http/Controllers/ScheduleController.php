@@ -5,19 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Schedule;
 use App\Models\Lahan;
 use Illuminate\Http\Request;
+use App\Support\ActiveLahan;
 
 class ScheduleController extends Controller
 {
     public function index()
     {
-        $schedules = Schedule::with('lahan')->orderBy('next_date')->get();
+        $query = Schedule::with('lahan')->orderBy('next_date');
+
+        if (!ActiveLahan::isAllSelected()) {
+            $query->where('lahan_id', ActiveLahan::id());
+        }
+
+        $schedules = $query->get();
 
         return view('schedules.index', compact('schedules'));
     }
 
     public function create()
     {
-        $lahans = Lahan::all();
+        $activeLahan = ActiveLahan::get();
+        $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
         return view('schedules.create', compact('lahans'));
     }
