@@ -20,16 +20,15 @@ class LahanPickerController extends Controller
     {
         session(['active_lahan_id' => $lahan->id]);
 
-        return redirect()->route('dashboard');
+        return redirect($request->input('redirect_to', route('dashboard')));
     }
 
     public function selectAll(Request $request)
     {
-        // Hanya Admin yang boleh pilih "Semua Lahan"
         abort_unless($request->user()->role === 'admin', 403);
 
         session()->forget('active_lahan_id');
 
-        return redirect()->route('dashboard');
+        return redirect($request->input('redirect_to', route('dashboard')));
     }
 }

@@ -20,6 +20,7 @@
         @if (auth()->user()->role === 'admin')
             <form action="{{ route('lahan-picker.select-all') }}" method="POST">
                 @csrf
+                <input name="redirect_to" type="hidden" value="{{ url()->current() }}">
                 <button
                     class="{{ !$active ? 'font-medium text-primary' : 'text-ink' }} w-full px-4 py-2 text-left text-sm hover:bg-primary-tint"
                     type="submit">
@@ -32,6 +33,7 @@
         @foreach ($allLahans as $lahan)
             <form action="{{ route('lahan-picker.select', $lahan) }}" method="POST">
                 @csrf
+                <input name="redirect_to" type="hidden" value="{{ url()->current() }}">
                 <button
                     class="{{ $active?->id === $lahan->id ? 'font-medium text-primary' : 'text-ink' }} w-full px-4 py-2 text-left text-sm hover:bg-primary-tint"
                     type="submit">

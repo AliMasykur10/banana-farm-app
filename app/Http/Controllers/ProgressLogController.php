@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgressLog;
 use App\Models\Lahan;
+use App\Support\ActiveLahan;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +17,13 @@ class ProgressLogController extends Controller
     {
         $this->authorize('viewAny', ProgressLog::class);
 
-        $progressLogs = ProgressLog::with('lahan', 'user')->latest('tanggal')->paginate(20);
+        $query = ProgressLog::with('lahan', 'user')->latest('tanggal');
+
+        if (!ActiveLahan::isAllSelected()) {
+            $query->where('lahan_id', ActiveLahan::id());
+        }
+
+        $progressLogs = $query->paginate(20);
 
         return view('progress-logs.index', compact('progressLogs'));
     }
@@ -25,7 +32,8 @@ class ProgressLogController extends Controller
     {
         $this->authorize('create', ProgressLog::class);
 
-        $lahans = Lahan::all();
+        $activeLahan = ActiveLahan::get();
+        $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
         return view('progress-logs.create', compact('lahans'));
     }
@@ -38,7 +46,7 @@ class ProgressLogController extends Controller
             'lahan_id' => 'required|exists:lahans,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string',
-            'foto.*' => 'nullable|image|max:5120', // maksimal 5MB per foto
+            'foto.*' => 'nullable|image|max:10240',
         ]);
 
         $fotoUrls = [];
@@ -85,7 +93,7 @@ class ProgressLogController extends Controller
             'lahan_id' => 'required|exists:lahans,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string',
-            'foto.*' => 'nullable|image|max:5120',
+            'foto.*' => 'nullable|image|max:10240',
         ]);
 
         $fotoUrls = $progressLog->foto_urls ?? [];
