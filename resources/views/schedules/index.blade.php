@@ -27,74 +27,71 @@
                     </a>
                 </div>
 
-                <table class="w-full text-left text-sm">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2">Lahan</th>
-                            <th class="py-2">Jenis</th>
-                            <th class="py-2">Pola Berulang</th>
-                            <th class="py-2">Jadwal Berikutnya</th>
-                            <th class="py-2">Status</th>
-                            <th class="py-2">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($schedules as $schedule)
-                            <tr
-                                class="{{ $schedule->next_date->isPast() && $schedule->status === 'aktif' ? 'bg-red-50' : '' }} border-b">
-                                <td class="py-2">{{ $schedule->lahan->nama }}</td>
-                                <td class="py-2">
-                                    <a class="text-blue-600 hover:underline"
-                                        href="{{ route('schedules.show', $schedule) }}">
-                                        {{ $schedule->jenis }}
-                                    </a>
+                <div class="mb-6 grid grid-cols-3 gap-4">
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Aktif</p>
+                        <p class="mt-1 text-lg font-bold text-ink">{{ $totalAktif }}</p>
+                    </div>
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Terlewat</p>
+                        <p class="{{ $totalTerlewat > 0 ? 'text-danger' : 'text-ink' }} mt-1 text-lg font-bold">
+                            {{ $totalTerlewat }}</p>
+                    </div>
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Selesai</p>
+                        <p class="mt-1 text-lg font-bold text-success">{{ $totalSelesai }}</p>
+                    </div>
+                </div>
 
-                                <td class="py-2">
-                                    {{ match ($schedule->recurring_pattern) {
-                                        'harian' => 'Harian',
-                                        'mingguan' => 'Mingguan',
-                                        'dua_mingguan' => '2 Mingguan',
-                                        'bulanan' => 'Bulanan',
-                                        default => '-',
-                                    } }}
-                                </td>
-                                <td class="py-2">
-                                    {{ $schedule->next_date->format('d M Y') }}
-                                    @if ($schedule->next_date->isPast() && $schedule->status === 'aktif')
-                                        <span class="text-xs text-red-600">(terlewat)</span>
-                                    @endif
-                                </td>
-                                <td class="py-2">
-                                    <span @class([
-                                        'px-2 py-1 text-xs rounded',
-                                        'bg-blue-100 text-blue-800' => $schedule->status === 'aktif',
-                                        'bg-green-100 text-green-800' => $schedule->status === 'selesai',
-                                        'bg-gray-100 text-gray-800' => $schedule->status === 'dibatalkan',
-                                    ])>
-                                        {{ ucfirst($schedule->status) }}
-                                    </span>
-                                </td>
-                                <td class="space-x-2 py-2">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @forelse ($schedules as $schedule)
+                        <x-data-card :accent="$schedule->next_date->isPast() && $schedule->status === 'aktif' ? 'danger' : ($schedule->status === 'selesai' ? 'success' : 'primary')">
+                            <div class="mb-2 flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-ink">
+                                        <a class="hover:underline"
+                                            href="{{ route('schedules.show', $schedule) }}">{{ $schedule->jenis }}</a>
+                                    </p>
+                                    <p class="text-xs text-ink-muted">{{ $schedule->lahan->nama }}</p>
+                                </div>
+                                <x-badge :tone="$schedule->status === 'aktif' ? 'primary' : ($schedule->status === 'selesai' ? 'success' : 'default')">
+                                    {{ ucfirst($schedule->status) }}
+                                </x-badge>
+                            </div>
 
-                                    <a class="text-yellow-600 hover:underline"
-                                        href="{{ route('schedules.edit', $schedule) }}">Edit</a>
-                                    @if ($schedule->status !== 'selesai')
-                                        <form action="{{ route('schedules.destroy', $schedule) }}" class="inline"
-                                            method="POST" onsubmit="return confirm('Yakin hapus jadwal ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="text-red-600 hover:underline" type="submit">Hapus</button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td class="py-4 text-center text-gray-500" colspan="6">Belum ada jadwal.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                            <p class="mb-1 text-sm text-ink">
+                                {{ $schedule->next_date->format('d M Y') }}
+                                @if ($schedule->next_date->isPast() && $schedule->status === 'aktif')
+                                    <span class="text-xs text-danger">(terlewat)</span>
+                                @endif
+                            </p>
+                            <p class="mb-3 text-xs text-ink-muted">
+                                {{ match ($schedule->recurring_pattern) {
+                                    'harian' => 'Harian',
+                                    'mingguan' => 'Mingguan',
+                                    'dua_mingguan' => '2 Mingguan',
+                                    'bulanan' => 'Bulanan',
+                                    default => 'Tidak berulang',
+                                } }}
+                            </p>
+
+                            <div class="flex items-center justify-between border-t border-line pt-2 text-xs">
+                                <a class="text-warn hover:underline"
+                                    href="{{ route('schedules.edit', $schedule) }}">Edit</a>
+                                @if ($schedule->status !== 'selesai')
+                                    <form action="{{ route('schedules.destroy', $schedule) }}" method="POST"
+                                        onsubmit="return confirm('Yakin hapus jadwal ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="text-danger hover:underline" type="submit">Hapus</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </x-data-card>
+                    @empty
+                        <x-empty-state message="Belum ada jadwal." />
+                    @endforelse
+                </div>
 
             </div>
         </div>

@@ -19,7 +19,11 @@ class ScheduleController extends Controller
 
         $schedules = $query->get();
 
-        return view('schedules.index', compact('schedules'));
+        $totalAktif = $schedules->where('status', 'aktif')->count();
+        $totalTerlewat = $schedules->where('status', 'aktif')->filter(fn($s) => $s->next_date->isPast())->count();
+        $totalSelesai = $schedules->where('status', 'selesai')->count();
+
+        return view('schedules.index', compact('schedules', 'totalAktif', 'totalTerlewat', 'totalSelesai'));
     }
 
     public function create()
