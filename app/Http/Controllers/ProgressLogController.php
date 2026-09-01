@@ -25,7 +25,10 @@ class ProgressLogController extends Controller
 
         $progressLogs = $query->paginate(20);
 
-        return view('progress-logs.index', compact('progressLogs'));
+        $totalLogBulanIni = (clone $query)->where('tanggal', '>=', now()->startOfMonth())->count();
+        $logTerakhir = $progressLogs->first();
+
+        return view('progress-logs.index', compact('progressLogs', 'totalLogBulanIni', 'logTerakhir'));
     }
 
     public function create()
