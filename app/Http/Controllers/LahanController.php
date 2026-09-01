@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lahan;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class LahanController extends Controller
@@ -51,13 +52,61 @@ class LahanController extends Controller
      */
     public function show(Lahan $lahan)
     {
-        $lahan->load(['activeAgreement.partner', 'panenCycles', 'progressLogs' => function ($query) {
-            $query->latest()->take(5);
-        }, 'troubleReports' => function ($query) {
-            $query->where('status', '!=', 'selesai');
-        }]);
+        $lahan->load([
+            'activeAgreement.partner',
+            'progressLogs' => fn($q) => $q->latest('tanggal')->take(5),
+            'troubleReports' => fn($q) => $q->where('status', '!=', 'selesai'),
+            'panenCycles' => fn($q) => $q->orderBy('nomor_siklus'),
+            'schedules' => fn($q) => $q->where('status', 'aktif')->orderBy('next_date')->take(5),
+            'assetAllocations.asset',
+        ]);
 
-        return view('lahans.show', compact('lahan'));
+        // Ringkasan keuangan sepanjang waktu
+        $totalPemasukan = Transaction::where('lahan_id', $lahan->id)
+            ->where('jenis', 'pemasukan')->sum('jumlah');
+        $totalPengeluaran = Transaction::where('lahan_id', $lahan->id)
+            ->where('jenis', 'pengeluaran')->sum('jumlah');
+        $totalProfit = $totalPemasukan - $totalPengeluaran;
+        $biayaPerPohon = $lahan->estimasi_jumlah_pohon > 0
+            ? $totalPengeluaran / $lahan->estimasi_jumlah_pohon
+            : 0;
+
+        // Grafik profit historis 6 bulan
+        $trendLabels = [];
+        $trendProfit = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $bulan = now()->subMonths($i);
+            $trendLabels[] = $bulan->translatedFormat('M Y');
+
+            $masuk = Transaction::where('lahan_id', $lahan->id)
+                ->where('jenis', 'pemasukan')
+                ->whereYear('tanggal', $bulan->year)
+                ->whereMonth('tanggal', $bulan->month)
+                ->sum('jumlah');
+            $keluar = Transaction::where('lahan_id', $lahan->id)
+                ->where('jenis', 'pengeluaran')
+                ->whereYear('tanggal', $bulan->year)
+                ->whereMonth('tanggal', $bulan->month)
+                ->sum('jumlah');
+
+            $trendProfit[] = $masuk - $keluar;
+        }
+
+        // Hasil panen per siklus (untuk chart)
+        $panenLabels = $lahan->panenCycles->map(fn($p) => "Siklus #{$p->nomor_siklus}");
+        $panenHasil = $lahan->panenCycles->pluck('total_hasil_kg');
+
+        return view('lahans.show', compact(
+            'lahan',
+            'totalPemasukan',
+            'totalPengeluaran',
+            'totalProfit',
+            'biayaPerPohon',
+            'trendLabels',
+            'trendProfit',
+            'panenLabels',
+            'panenHasil'
+        ));
     }
 
     /**
