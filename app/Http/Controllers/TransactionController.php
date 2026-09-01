@@ -24,7 +24,28 @@ class TransactionController extends Controller
 
         $transactions = $query->paginate(20);
 
-        return view('transactions.index', compact('transactions'));
+        // Ringkasan berdasarkan filter yang sama (tanpa pagination, untuk hitung total & chart)
+        $summaryQuery = Transaction::query();
+        if (!ActiveLahan::isAllSelected()) {
+            $summaryQuery->where('lahan_id', ActiveLahan::id());
+        }
+
+        $totalPemasukan = (clone $summaryQuery)->where('jenis', 'pemasukan')->sum('jumlah');
+        $totalPengeluaran = (clone $summaryQuery)->where('jenis', 'pengeluaran')->sum('jumlah');
+
+        $breakdownKategori = (clone $summaryQuery)
+            ->where('jenis', 'pengeluaran')
+            ->selectRaw('kategori, SUM(jumlah) as total')
+            ->groupBy('kategori')
+            ->orderByDesc('total')
+            ->pluck('total', 'kategori');
+
+        return view('transactions.index', compact(
+            'transactions',
+            'totalPemasukan',
+            'totalPengeluaran',
+            'breakdownKategori'
+        ));
     }
 
     public function create()
