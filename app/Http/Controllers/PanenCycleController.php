@@ -19,7 +19,27 @@ class PanenCycleController extends Controller
 
         $panenCycles = $query->get();
 
-        return view('panen-cycles.index', compact('panenCycles'));
+        // Data untuk chart tren hasil panen (semua siklus, urut kronologis)
+        $chartData = $panenCycles->sortBy('tanggal_panen')->values();
+        $panenLabels = $chartData->map(fn($p) => $p->lahan->nama . ' #' . $p->nomor_siklus);
+        $panenHasilKg = $chartData->pluck('total_hasil_kg');
+        $panenHasilPerPohon = $chartData->map(fn($p) => $p->jumlah_pohon_produktif > 0
+            ? round($p->total_hasil_kg / $p->jumlah_pohon_produktif, 2)
+            : 0);
+
+        $totalHasilKeseluruhan = $panenCycles->sum('total_hasil_kg');
+        $totalPemasukanPanen = $panenCycles->sum('total_pemasukan');
+        $rataRataPerPohon = $chartData->count() > 0 ? round($panenHasilPerPohon->avg(), 2) : 0;
+
+        return view('panen-cycles.index', compact(
+            'panenCycles',
+            'panenLabels',
+            'panenHasilKg',
+            'panenHasilPerPohon',
+            'totalHasilKeseluruhan',
+            'totalPemasukanPanen',
+            'rataRataPerPohon'
+        ));
     }
 
     public function create()

@@ -6,6 +6,7 @@ use App\Models\Lahan;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
+
 class LahanController extends Controller
 {
     /**
