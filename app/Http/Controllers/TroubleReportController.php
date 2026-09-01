@@ -24,7 +24,17 @@ class TroubleReportController extends Controller
 
         $troubleReports = $query->paginate(20);
 
-        return view('trouble-reports.index', compact('troubleReports'));
+        $summaryQuery = TroubleReport::query();
+        if (!ActiveLahan::isAllSelected()) {
+            $summaryQuery->where('lahan_id', ActiveLahan::id());
+        }
+
+        $totalAktif = (clone $summaryQuery)->where('status', '!=', 'selesai')->count();
+        $totalTinggi = (clone $summaryQuery)->where('urgensi', 'tinggi')->where('status', '!=', 'selesai')->count();
+        $totalSelesaiBulanIni = (clone $summaryQuery)->where('status', 'selesai')
+            ->where('updated_at', '>=', now()->startOfMonth())->count();
+
+        return view('trouble-reports.index', compact('troubleReports', 'totalAktif', 'totalTinggi', 'totalSelesaiBulanIni'));
     }
 
     public function create()

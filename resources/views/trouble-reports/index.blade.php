@@ -21,68 +21,71 @@
                         + Lapor Masalah
                     </a>
                 </div>
+                <div class="mb-6 grid grid-cols-3 gap-4">
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Aktif</p>
+                        <p class="{{ $totalAktif > 0 ? 'text-warn' : 'text-ink' }} mt-1 text-lg font-bold">
+                            {{ $totalAktif }}</p>
+                    </div>
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Urgensi Tinggi</p>
+                        <p class="{{ $totalTinggi > 0 ? 'text-danger' : 'text-ink' }} mt-1 text-lg font-bold">
+                            {{ $totalTinggi }}</p>
+                    </div>
+                    <div class="rounded-xl border border-line bg-surface p-4 text-center">
+                        <p class="text-xs text-ink-muted">Selesai Bulan Ini</p>
+                        <p class="mt-1 text-lg font-bold text-success">{{ $totalSelesaiBulanIni }}</p>
+                    </div>
+                </div>
 
-                <table class="w-full text-left text-sm">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2">Lahan</th>
-                            <th class="py-2">Judul</th>
-                            <th class="py-2">Urgensi</th>
-                            <th class="py-2">Status</th>
-                            <th class="py-2">Dilaporkan oleh</th>
-                            <th class="py-2">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($troubleReports as $report)
-                            <tr class="border-b">
-                                <td class="py-2">{{ $report->lahan->nama }}</td>
-                                <td class="py-2">
-                                    <a class="text-blue-600 hover:underline"
-                                        href="{{ route('trouble-reports.show', $report) }}">
-                                        {{ $report->judul }}
-                                    </a>
-                                </td>
-                                <td class="py-2">
-                                    <span @class([
-                                        'px-2 py-1 text-xs rounded',
-                                        'bg-red-100 text-red-800' => $report->urgensi === 'tinggi',
-                                        'bg-yellow-100 text-yellow-800' => $report->urgensi === 'sedang',
-                                        'bg-gray-100 text-gray-800' => $report->urgensi === 'rendah',
-                                    ])>
-                                        {{ ucfirst($report->urgensi) }}
-                                    </span>
-                                </td>
-                                <td class="py-2">
-                                    <span @class([
-                                        'px-2 py-1 text-xs rounded',
-                                        'bg-gray-200 text-gray-800' => $report->status === 'dilaporkan',
-                                        'bg-blue-100 text-blue-800' => $report->status === 'ditindaklanjuti',
-                                        'bg-green-100 text-green-800' => $report->status === 'selesai',
-                                    ])>
-                                        {{ ucfirst(str_replace('_', ' ', $report->status)) }}
-                                    </span>
-                                </td>
-                                <td class="py-2">{{ $report->user->name }}</td>
-                                <td class="space-x-2 py-2">
-                                    <a class="text-yellow-600 hover:underline"
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @forelse ($troubleReports as $report)
+                        <x-data-card :accent="$report->status === 'selesai' ? 'success' : ($report->urgensi === 'tinggi' ? 'danger' : 'warn')">
+                            <div class="mb-2 flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-ink">{{ $report->judul }}</p>
+                                    <p class="text-xs text-ink-muted">{{ $report->lahan->nama }}</p>
+                                </div>
+                                <x-badge :tone="$report->urgensi === 'tinggi' ? 'danger' : ($report->urgensi === 'sedang' ? 'warn' : 'default')">
+                                    {{ ucfirst($report->urgensi) }}
+                                </x-badge>
+                            </div>
+
+                            @if ($report->deskripsi)
+                                <p class="mb-3 text-sm text-ink-muted">{{ Str::limit($report->deskripsi, 70) }}</p>
+                            @endif
+
+                            @if (!empty($report->foto_urls))
+                                <div class="mb-3 flex gap-1.5">
+                                    @foreach (array_slice($report->foto_urls, 0, 3) as $foto)
+                                        <img class="h-14 w-14 rounded-lg border border-line object-cover"
+                                            src="{{ Storage::url($foto) }}">
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <div class="flex items-center justify-between border-t border-line pt-2 text-xs">
+                                <x-badge :tone="$report->status === 'selesai' ? 'success' : 'default'">
+                                    {{ ucfirst(str_replace('_', ' ', $report->status)) }}
+                                </x-badge>
+                                <div class="space-x-2">
+                                    <a class="text-primary hover:underline"
+                                        href="{{ route('trouble-reports.show', $report) }}">Lihat</a>
+                                    <a class="text-warn hover:underline"
                                         href="{{ route('trouble-reports.edit', $report) }}">Edit</a>
                                     <form action="{{ route('trouble-reports.destroy', $report) }}" class="inline"
                                         method="POST" onsubmit="return confirm('Yakin hapus laporan ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="text-red-600 hover:underline" type="submit">Hapus</button>
+                                        <button class="text-danger hover:underline" type="submit">Hapus</button>
                                     </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td class="py-4 text-center text-gray-500" colspan="6">Belum ada laporan masalah.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                        </x-data-card>
+                    @empty
+                        <x-empty-state message="Belum ada laporan masalah." />
+                    @endforelse
+                </div>
 
                 <div class="mt-4">
                     {{ $troubleReports->links() }}
