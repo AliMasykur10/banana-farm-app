@@ -9,8 +9,10 @@ use App\Support\ActiveLahan;
 
 class ScheduleController extends Controller
 {
+    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     public function index()
     {
+        $this->authorize('viewAny', Schedule::class);
         $query = Schedule::with('lahan')->orderBy('next_date');
 
         if (!ActiveLahan::isAllSelected()) {
@@ -28,6 +30,7 @@ class ScheduleController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Schedule::class);
         $activeLahan = ActiveLahan::get();
         $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
@@ -36,6 +39,7 @@ class ScheduleController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Schedule::class);
         $validated = $request->validate([
             'lahan_id' => 'required|exists:lahans,id',
             'jenis' => 'required|string|max:255',
@@ -52,6 +56,7 @@ class ScheduleController extends Controller
 
     public function show(Schedule $schedule)
     {
+        $this->authorize('view', $schedule);
         $schedule->load('lahan', 'logs.user');
 
         return view('schedules.show', compact('schedule'));
@@ -59,6 +64,7 @@ class ScheduleController extends Controller
 
     public function edit(Schedule $schedule)
     {
+        $this->authorize('update', $schedule);
         $lahans = Lahan::all();
 
         return view('schedules.edit', compact('schedule', 'lahans'));
@@ -66,6 +72,7 @@ class ScheduleController extends Controller
 
     public function update(Request $request, Schedule $schedule)
     {
+        $this->authorize('update', $schedule);
         $validated = $request->validate([
             'lahan_id' => 'required|exists:lahans,id',
             'jenis' => 'required|string|max:255',
@@ -81,6 +88,7 @@ class ScheduleController extends Controller
 
     public function destroy(Schedule $schedule)
     {
+        $this->authorize('delete', $schedule);
         if ($schedule->status === 'selesai') {
             return redirect()->route('schedules.index')
                 ->with('error', 'Jadwal yang sudah selesai tidak bisa dihapus, karena jadi riwayat perawatan.');
@@ -94,6 +102,7 @@ class ScheduleController extends Controller
     // Tandai jadwal sudah dikerjakan, otomatis geser ke next_date berikutnya kalau recurring
     public function markDone(Request $request, Schedule $schedule)
     {
+        $this->authorize('update', $schedule);
         $schedule->logs()->create([
             'user_id' => auth()->id(),
             'tanggal_dilakukan' => now(),

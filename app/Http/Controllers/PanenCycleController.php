@@ -9,8 +9,10 @@ use App\Support\ActiveLahan;
 
 class PanenCycleController extends Controller
 {
+    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     public function index()
     {
+        $this->authorize('viewAny', PanenCycle::class);
         $query = PanenCycle::with('lahan', 'anakanRecord')->latest('tanggal_panen');
 
         if (!ActiveLahan::isAllSelected()) {
@@ -44,6 +46,7 @@ class PanenCycleController extends Controller
 
     public function create()
     {
+        $this->authorize('create', PanenCycle::class);
         $activeLahan = ActiveLahan::get();
         $lahans = $activeLahan ? collect([$activeLahan]) : Lahan::all();
 
@@ -52,6 +55,7 @@ class PanenCycleController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', PanenCycle::class);
         $validated = $request->validate([
             'lahan_id' => 'required|exists:lahans,id',
             'nomor_siklus' => 'required|integer|min:1',
@@ -145,6 +149,7 @@ class PanenCycleController extends Controller
 
     public function show(PanenCycle $panenCycle)
     {
+        $this->authorize('view', $panenCycle);
         $panenCycle->load('lahan', 'anakanRecord.lahanTujuan', 'transactions');
 
         return view('panen-cycles.show', compact('panenCycle'));
@@ -152,7 +157,8 @@ class PanenCycleController extends Controller
 
     public function destroy(PanenCycle $panenCycle)
     {
-        // Hapus transaksi terkait dulu (soft-delete tetap tersimpan sebagai riwayat)
+        $this->authorize('delete', $panenCycle);
+        // Hapus transaksi terkait dulu (soft-delete tetap tersimpan ebagai riwayat)
         $panenCycle->transactions()->delete();
         $panenCycle->anakanRecord()?->delete();
         $panenCycle->delete();
