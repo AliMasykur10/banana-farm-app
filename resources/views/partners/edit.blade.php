@@ -1,48 +1,34 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Edit Partner
-        </h2>
+        <h2 class="text-xl font-semibold text-ink">Edit Partner</h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+        <x-form-card>
+            <form action="{{ route('partners.update', $partner) }}" class="space-y-4" method="POST">
+                @csrf
+                @method('PUT')
 
-                <form action="{{ route('partners.update', $partner) }}" method="POST" class="space-y-4">
-                    @csrf
-                    @method('PUT')
+                <x-form-select label="Tipe Partner" name="tipe" required>
+                    <option {{ old('tipe', $partner->tipe) == 'penyedia_pembeli' ? 'selected' : '' }}
+                        value="penyedia_pembeli">Penyedia Bibit & Pembeli</option>
+                    <option {{ old('tipe', $partner->tipe) == 'pemilik_lahan' ? 'selected' : '' }} value="pemilik_lahan">
+                        Pemilik Lahan</option>
+                </x-form-select>
 
-                    <div>
-                        <label class="block text-sm font-medium">Tipe Partner</label>
-                        <select name="tipe" class="mt-1 block w-full rounded border-gray-300">
-                            <option value="penyedia_pembeli" {{ old('tipe', $partner->tipe) == 'penyedia_pembeli' ? 'selected' : '' }}>Penyedia Bibit & Pembeli</option>
-                            <option value="pemilik_lahan" {{ old('tipe', $partner->tipe) == 'pemilik_lahan' ? 'selected' : '' }}>Pemilik Lahan</option>
-                        </select>
-                    </div>
+                <x-form-input :value="old('nama', $partner->nama)" label="Nama" name="nama" required />
 
-                    <div>
-                        <label class="block text-sm font-medium">Nama</label>
-                        <input type="text" name="nama" value="{{ old('nama', $partner->nama) }}" class="mt-1 block w-full rounded border-gray-300">
-                    </div>
+                <x-form-input :value="old('kontak', $partner->kontak)" label="Kontak" name="kontak" />
 
-                    <div>
-                        <label class="block text-sm font-medium">Kontak</label>
-                        <input type="text" name="kontak" value="{{ old('kontak', $partner->kontak) }}" class="mt-1 block w-full rounded border-gray-300">
-                    </div>
+                <x-form-textarea :value="old('catatan', $partner->catatan)" label="Catatan" name="catatan" />
 
-                    <div>
-                        <label class="block text-sm font-medium">Catatan</label>
-                        <textarea name="catatan" rows="3" class="mt-1 block w-full rounded border-gray-300">{{ old('catatan', $partner->catatan) }}</textarea>
-                    </div>
-
-                    <div class="flex justify-end space-x-2">
-                        <a href="{{ route('partners.index') }}" class="px-4 py-2 bg-gray-200 rounded">Batal</a>
-                        <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">Update</button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <a class="rounded-lg bg-bg px-4 py-2 text-sm text-ink hover:bg-line"
+                        href="{{ route('partners.index') }}">Batal</a>
+                    <button class="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90"
+                        type="submit">Update</button>
+                </div>
+            </form>
+        </x-form-card>
     </div>
 </x-app-layout>
