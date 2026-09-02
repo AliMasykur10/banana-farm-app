@@ -11,7 +11,11 @@ class PartnerController extends Controller
     {
         $partners = Partner::with('agreements.lahan')->get();
 
-        return view('partners.index', compact('partners'));
+        $totalPenyediaPembeli = $partners->where('tipe', 'penyedia_pembeli')->count();
+        $totalPemilikLahan = $partners->where('tipe', 'pemilik_lahan')->count();
+        $totalKesepakatanAktif = $partners->sum(fn($p) => $p->agreements->where('is_active', true)->count());
+
+        return view('partners.index', compact('partners', 'totalPenyediaPembeli', 'totalPemilikLahan', 'totalKesepakatanAktif'));
     }
 
     public function create()
