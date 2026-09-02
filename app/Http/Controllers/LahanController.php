@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lahan;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\TroubleReport;
 
 
 class LahanController extends Controller
@@ -14,7 +15,17 @@ class LahanController extends Controller
      */
     public function index()
     {
-        $lahans = Lahan::withCount('transactions')->latest()->get();
+        $lahans = Lahan::withCount('transactions')->latest()->get()->map(function ($lahan) {
+            $totalPemasukan = Transaction::where('lahan_id', $lahan->id)
+                ->where('jenis', 'pemasukan')->sum('jumlah');
+            $totalPengeluaran = Transaction::where('lahan_id', $lahan->id)
+                ->where('jenis', 'pengeluaran')->sum('jumlah');
+            $lahan->total_profit = $totalPemasukan - $totalPengeluaran;
+            $lahan->trouble_aktif_count = TroubleReport::where('lahan_id', $lahan->id)
+                ->where('status', '!=', 'selesai')->count();
+
+            return $lahan;
+        });
 
         return view('lahans.index', compact('lahans'));
     }

@@ -1,71 +1,79 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Daftar Lahan
-        </h2>
+        <h2 class="text-xl font-semibold text-ink">Daftar Lahan</h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-                @if (session('success'))
-                    <div class="mb-4 p-4 bg-green-100 text-green-800 rounded">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <div class="flex justify-end mb-4">
-                    <a href="{{ route('lahans.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
-                        + Tambah Lahan
-                    </a>
+            @if (session('success'))
+                <div class="mb-4 rounded-xl bg-success/10 p-4 text-sm text-success">
+                    {{ session('success') }}
                 </div>
+            @endif
 
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b dark:border-gray-700">
-                            <th class="py-2">Nama</th>
-                            <th class="py-2">Luas</th>
-                            <th class="py-2">Estimasi Pohon</th>
-                            <th class="py-2">Fase</th>
-                            <th class="py-2">Jumlah Transaksi</th>
-                            <th class="py-2">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($lahans as $lahan)
-                            <tr class="border-b dark:border-gray-700">
-                                <td class="py-2">
-                                    <a href="{{ route('lahans.show', $lahan) }}" class="text-blue-600 hover:underline">
-                                        {{ $lahan->nama }}
-                                    </a>
-                                </td>
-                                <td class="py-2">{{ $lahan->luas_panjang_m }} x {{ $lahan->luas_lebar_m }} m</td>
-                                <td class="py-2">{{ $lahan->estimasi_jumlah_pohon }}</td>
-                                <td class="py-2">
-                                    <span class="px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700">
-                                        {{ str_replace('_', ' ', $lahan->fase_saat_ini) }}
-                                    </span>
-                                </td>
-                                <td class="py-2">{{ $lahan->transactions_count }}</td>
-                                <td class="py-2 space-x-2">
-                                    <a href="{{ route('lahans.edit', $lahan) }}" class="text-yellow-600 hover:underline">Edit</a>
-                                    <form action="{{ route('lahans.destroy', $lahan) }}" method="POST" class="inline" onsubmit="return confirm('Yakin hapus lahan ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:underline">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="py-4 text-center text-gray-500">Belum ada lahan.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-
+            <div class="mb-6 flex justify-end">
+                <a class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                    href="{{ route('lahans.create') }}">
+                    + Tambah Lahan
+                </a>
             </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                @forelse ($lahans as $lahan)
+                    <x-data-card accent="primary">
+                        <div class="mb-3 flex items-start justify-between">
+                            <div>
+                                <p class="font-medium text-ink">
+                                    <a class="hover:underline"
+                                        href="{{ route('lahans.show', $lahan) }}">{{ $lahan->nama }}</a>
+                                </p>
+                                <x-badge
+                                    tone="primary">{{ str_replace('_', ' ', ucfirst($lahan->fase_saat_ini)) }}</x-badge>
+                            </div>
+                            @if ($lahan->trouble_aktif_count > 0)
+                                <x-badge tone="danger">{{ $lahan->trouble_aktif_count }} trouble</x-badge>
+                            @endif
+                        </div>
+
+                        <p class="mb-3 text-xs text-ink-muted">
+                            {{ $lahan->luas_panjang_m }}m × {{ $lahan->luas_lebar_m }}m ·
+                            {{ $lahan->estimasi_jumlah_pohon ?? '-' }} pohon
+                        </p>
+
+                        <div class="mb-3 grid grid-cols-2 gap-3 border-b border-line pb-3">
+                            <div>
+                                <p class="text-xs text-ink-muted">Total Profit</p>
+                                <p
+                                    class="{{ $lahan->total_profit >= 0 ? 'text-success' : 'text-danger' }} text-sm font-semibold">
+                                    Rp {{ number_format($lahan->total_profit, 0, ',', '.') }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-ink-muted">Total Transaksi</p>
+                                <p class="text-sm font-semibold text-ink">{{ $lahan->transactions_count }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs">
+                            <a class="text-primary hover:underline" href="{{ route('lahans.show', $lahan) }}">Lihat
+                                Detail</a>
+                            <div class="space-x-2">
+                                <a class="text-warn hover:underline" href="{{ route('lahans.edit', $lahan) }}">Edit</a>
+                                <form action="{{ route('lahans.destroy', $lahan) }}" class="inline" method="POST"
+                                    onsubmit="return confirm('Yakin hapus lahan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="text-danger hover:underline" type="submit">Hapus</button>
+                                </form>
+                            </div>
+                        </div>
+                    </x-data-card>
+                @empty
+                    <x-empty-state message="Belum ada lahan." />
+                @endforelse
+            </div>
+
         </div>
     </div>
 </x-app-layout>
