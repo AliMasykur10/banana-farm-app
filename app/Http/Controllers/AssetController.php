@@ -12,7 +12,12 @@ class AssetController extends Controller
     {
         $assets = Asset::with('allocations.lahan')->latest()->get();
 
-        return view('assets.index', compact('assets'));
+        $totalBaik = $assets->where('kondisi', 'baik')->count();
+        $totalRusak = $assets->where('kondisi', 'rusak')->count();
+        $totalPerluServis = $assets->where('kondisi', 'perlu_servis')->count();
+        $totalNilaiAset = $assets->sum('harga_beli');
+
+        return view('assets.index', compact('assets', 'totalBaik', 'totalRusak', 'totalPerluServis', 'totalNilaiAset'));
     }
 
     public function create()
