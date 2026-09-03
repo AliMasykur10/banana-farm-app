@@ -34,57 +34,52 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="max-w-3xl">
                     @forelse ($progressLogs as $log)
-                        <x-data-card accent="primary">
+                        <x-timeline-item :date="$log->tanggal->translatedFormat('d M Y')" accent="primary">
                             <div class="mb-2 flex items-start justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-ink">{{ $log->lahan->nama }}</p>
-                                    <p class="text-xs text-ink-muted">{{ $log->tanggal->format('d M Y') }}</p>
-                                </div>
+                                <p class="text-sm font-medium text-ink">{{ $log->lahan->nama }}</p>
+                                <span class="text-xs text-ink-muted">{{ $log->user->name }}</span>
                             </div>
 
                             @if ($log->keterangan)
-                                <p class="mb-3 text-sm text-ink">{{ Str::limit($log->keterangan, 80) }}</p>
+                                <p class="mb-3 text-sm text-ink">{{ $log->keterangan }}</p>
                             @endif
 
                             @if (!empty($log->foto_urls))
                                 <div class="mb-3 flex gap-1.5">
-                                    @foreach (array_slice($log->foto_urls, 0, 3) as $foto)
-                                        <img class="h-14 w-14 rounded-lg border border-line object-cover"
+                                    @foreach (array_slice($log->foto_urls, 0, 4) as $foto)
+                                        <img class="h-16 w-16 rounded-lg border border-line object-cover"
                                             src="{{ Storage::url($foto) }}">
                                     @endforeach
-                                    @if (count($log->foto_urls) > 3)
+                                    @if (count($log->foto_urls) > 4)
                                         <div
-                                            class="flex h-14 w-14 items-center justify-center rounded-lg bg-bg text-xs text-ink-muted">
-                                            +{{ count($log->foto_urls) - 3 }}
+                                            class="flex h-16 w-16 items-center justify-center rounded-lg bg-bg text-xs text-ink-muted">
+                                            +{{ count($log->foto_urls) - 4 }}
                                         </div>
                                     @endif
                                 </div>
                             @endif
 
-                            <div class="flex items-center justify-between border-t border-line pt-2 text-xs">
-                                <span class="text-ink-muted">{{ $log->user->name }}</span>
-                                <div class="space-x-2">
-                                    <a class="text-primary hover:underline"
-                                        href="{{ route('progress-logs.show', $log) }}">Lihat</a>
-                                    <a class="text-warn hover:underline"
-                                        href="{{ route('progress-logs.edit', $log) }}">Edit</a>
-                                    <form action="{{ route('progress-logs.destroy', $log) }}" class="inline"
-                                        method="POST" onsubmit="return confirm('Yakin hapus log ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="text-danger hover:underline" type="submit">Hapus</button>
-                                    </form>
-                                </div>
+                            <div class="flex items-center gap-3 border-t border-line pt-2 text-xs">
+                                <a class="text-primary hover:underline"
+                                    href="{{ route('progress-logs.show', $log) }}">Lihat</a>
+                                <a class="text-warn hover:underline"
+                                    href="{{ route('progress-logs.edit', $log) }}">Edit</a>
+                                <form action="{{ route('progress-logs.destroy', $log) }}" method="POST"
+                                    onsubmit="return confirm('Yakin hapus log ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="text-danger hover:underline" type="submit">Hapus</button>
+                                </form>
                             </div>
-                        </x-data-card>
+                        </x-timeline-item>
                     @empty
                         <x-empty-state message="Belum ada log perkembangan." />
                     @endforelse
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4 max-w-3xl">
                     {{ $progressLogs->links() }}
                 </div>
 

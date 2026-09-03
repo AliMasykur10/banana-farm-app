@@ -38,58 +38,64 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="max-w-3xl">
                     @forelse ($troubleReports as $report)
-                        <x-data-card :accent="$report->status === 'selesai' ? 'success' : ($report->urgensi === 'tinggi' ? 'danger' : 'warn')">
+                        <x-timeline-item :accent="$report->status === 'selesai' ? 'success' : ($report->urgensi === 'tinggi' ? 'danger' : 'warn')" :date="$report->created_at->translatedFormat('d M Y')">
+
                             <div class="mb-2 flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-ink">{{ $report->judul }}</p>
-                                    <p class="text-xs text-ink-muted">{{ $report->lahan->nama }} ·
-                                        {{ $report->created_at->format('d M Y') }}</p>
+                                    <p class="text-xs text-ink-muted">{{ $report->lahan->nama }}</p>
                                 </div>
                                 <x-badge :tone="$report->urgensi === 'tinggi' ? 'danger' : ($report->urgensi === 'sedang' ? 'warn' : 'default')">
                                     {{ ucfirst($report->urgensi) }}
                                 </x-badge>
-                                @if ($report->selesai_at)
-                                    <span
-                                        class="ml-1 text-ink-muted">({{ $report->created_at->diffForHumans($report->selesai_at, true) }})</span>
-                                @endif
                             </div>
 
                             @if ($report->deskripsi)
-                                <p class="mb-3 text-sm text-ink-muted">{{ Str::limit($report->deskripsi, 70) }}</p>
+                                <p class="mb-3 text-sm text-ink-muted">{{ $report->deskripsi }}</p>
                             @endif
 
                             @if (!empty($report->foto_urls))
                                 <div class="mb-3 flex gap-1.5">
-                                    @foreach (array_slice($report->foto_urls, 0, 3) as $foto)
-                                        <img class="h-14 w-14 rounded-lg border border-line object-cover"
+                                    @foreach (array_slice($report->foto_urls, 0, 4) as $foto)
+                                        <img class="h-16 w-16 rounded-lg border border-line object-cover"
                                             src="{{ Storage::url($foto) }}">
                                     @endforeach
                                 </div>
                             @endif
 
-                            <div class="flex items-center justify-between border-t border-line pt-2 text-xs">
-                                <x-badge :tone="$report->status === 'selesai' ? 'success' : 'default'">
-                                    {{ ucfirst(str_replace('_', ' ', $report->status)) }}
-                                </x-badge>
-                                <div class="space-x-2">
+                            <div class="space-y-2 border-t border-line pt-2 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <x-badge :tone="$report->status === 'selesai' ? 'success' : 'default'">
+                                        {{ ucfirst(str_replace('_', ' ', $report->status)) }}
+                                    </x-badge>
+                                    @if ($report->selesai_at)
+                                        <span
+                                            class="text-ink-muted">({{ $report->created_at->diffForHumans($report->selesai_at, true) }})</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center justify-end gap-3">
                                     <a class="text-primary hover:underline"
                                         href="{{ route('trouble-reports.show', $report) }}">Lihat</a>
                                     <a class="text-warn hover:underline"
                                         href="{{ route('trouble-reports.edit', $report) }}">Edit</a>
-                                    <form action="{{ route('trouble-reports.destroy', $report) }}" class="inline"
-                                        method="POST" onsubmit="return confirm('Yakin hapus laporan ini?')">
+                                    <form action="{{ route('trouble-reports.destroy', $report) }}" method="POST"
+                                        onsubmit="return confirm('Yakin hapus laporan ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="text-danger hover:underline" type="submit">Hapus</button>
                                     </form>
                                 </div>
                             </div>
-                        </x-data-card>
+                        </x-timeline-item>
                     @empty
                         <x-empty-state message="Belum ada laporan masalah." />
                     @endforelse
+                </div>
+
+                <div class="mt-4 max-w-3xl">
+                    {{ $troubleReports->links() }}
                 </div>
 
                 <div class="mt-4">
