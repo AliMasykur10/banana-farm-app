@@ -125,6 +125,7 @@ class TroubleReportController extends Controller
     // Method tambahan: ubah status (state machine linear)
     public function advanceStatus(TroubleReport $troubleReport)
     {
+
         $this->authorize('update', $troubleReport);
 
         $next = match ($troubleReport->status) {
@@ -133,7 +134,12 @@ class TroubleReportController extends Controller
             default => $troubleReport->status,
         };
 
-        $troubleReport->update(['status' => $next]);
+        $updateData = ['status' => $next];
+        if ($next === 'selesai') {
+            $updateData['selesai_at'] = now();
+        }
+
+        $troubleReport->update($updateData);
 
         return redirect()->route('trouble-reports.show', $troubleReport)->with('success', "Status diubah menjadi: {$next}");
     }

@@ -13,7 +13,7 @@
                     {{ session('success') }}
                 </div>
             @endif
-            
+
             @if (session('error'))
                 <div class="rounded bg-red-100 p-4 text-red-800">
                     {{ session('error') }}
@@ -22,7 +22,17 @@
 
             <div class="space-y-3 overflow-hidden bg-white p-6 text-sm shadow-sm sm:rounded-lg">
                 <div><span class="text-gray-500">Lahan:</span> {{ $troubleReport->lahan->nama }}</div>
+                <div><span class="text-gray-500">Tanggal Lapor:</span>
+                    {{ $troubleReport->created_at->format('d M Y, H:i') }}</div>
+
+                @if ($troubleReport->selesai_at)
+                    <div><span class="text-gray-500">Tanggal Selesai:</span>
+                        {{ $troubleReport->selesai_at->format('d M Y, H:i') }}</div>
+                    <div><span class="text-gray-500">Durasi Penyelesaian:</span>
+                        {{ $troubleReport->created_at->diffForHumans($troubleReport->selesai_at, true) }}</div>
+                @endif
                 <div><span class="text-gray-500">Urgensi:</span> {{ ucfirst($troubleReport->urgensi) }}</div>
+
                 <div>
                     <span class="text-gray-500">Status:</span>
                     <span @class([

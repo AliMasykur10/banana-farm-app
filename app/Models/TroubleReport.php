@@ -21,10 +21,12 @@ class TroubleReport extends Model
         'urgensi',
         'status',
         'foto_urls',
+        'selesai_at',
     ];
 
     protected $casts = [
         'foto_urls' => 'array',
+        'selesai_at' => 'datetime',
     ];
 
     public function lahan()

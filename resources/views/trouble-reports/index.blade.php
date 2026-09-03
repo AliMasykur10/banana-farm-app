@@ -44,11 +44,16 @@
                             <div class="mb-2 flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-ink">{{ $report->judul }}</p>
-                                    <p class="text-xs text-ink-muted">{{ $report->lahan->nama }}</p>
+                                    <p class="text-xs text-ink-muted">{{ $report->lahan->nama }} ·
+                                        {{ $report->created_at->format('d M Y') }}</p>
                                 </div>
                                 <x-badge :tone="$report->urgensi === 'tinggi' ? 'danger' : ($report->urgensi === 'sedang' ? 'warn' : 'default')">
                                     {{ ucfirst($report->urgensi) }}
                                 </x-badge>
+                                @if ($report->selesai_at)
+                                    <span
+                                        class="ml-1 text-ink-muted">({{ $report->created_at->diffForHumans($report->selesai_at, true) }})</span>
+                                @endif
                             </div>
 
                             @if ($report->deskripsi)
